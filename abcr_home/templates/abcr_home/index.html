@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+   {% load static%}
+   <link rel="stylesheet" type="text/css" href="{% static 'abcr_home/css/bootstrap.min.css'  %}" />
+   <link rel="stylesheet" type="text/css" href="{% static 'abcr_home/css/fonts-awesome.min.css'  %}" />
+   <link rel="stylesheet" type="text/css" href="{% static 'abcr_home/css/tooplate-gymso-style.css'  %}" />
+   <link rel="stylesheet" type="text/css" href="{% static 'abcr_home/css/aos.css'  %}" />
+   <link rel="stylesheet" type="text/css" href="{% static 'abcr_home/style.css'  %}" />
+   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+   <head>
+      <meta charset="UTF-8">
+      <title>ABC Review Summarization</title>
+      <nav class="navbar navbar-expand-lg fixed-top">
+         <a class="navbar-brand" href="http://127.0.0.1:8000/home/">#Aspect Based Critical Review Summarization by Re-viewing the Reviews</a>
+      </nav>
+   </head>
+   <body>
+      {% if button_pressed_wrongly %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+         <strong>Warning!</strong> Please select a hotel name from the list then press "Get Summaries".
+         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+         <span aria-hidden="true">&times;</span>
+         </button>
+      </div>
+      {% endif %}
+      <div class="container -fluid px-1">
+         <div class="row">
+            <div class="col-sm-3 form-group" >
+               <h3  class="text-center">Hotels</h3>
+               <form action="{% url 'abcr_home:show'%}" method="get">
+                  <select class="form-control" name="hotel_id">
+                     <option value="" selected disabled hidden>Select a Hotel</option>
+                     {% for hotel in all_hotels %}
+                     <option value="{{ hotel.id }}">{{ hotel.hotel_name }}</option>
+                     {% endfor %}
+                  </select>
+                  <input type="submit" class="btn btn-dark " style="display: block; margin: 5px auto;"  value="Get Summaries">
+               </form>
+               {% if selected_hotel %}
+               <h3 class="text-center" style="display: block; margin: 5px auto;" ><a href="{{selected_hotel.trip_link}}"><b>{{selected_hotel.hotel_name}}</b></a></h3>
+               <span class="text-center" style="display: block; margin: 5px auto;" >Reviews in TripAdvisor : <b>{{selected_hotel.hotel_review_count}}</b></span>
+               <span class="text-center" style="display: block; margin: 5px auto;" >Rating : <b> {{selected_hotel.hotel_rating}}</b></span>
+               <br><br>
+               <h3 class="text-center" style="display: block; margin: 5px auto;" >Aspects</h3>
+               <form action="{% url 'abcr_home:show_2'%}" method="get">
+                  {% for a in aspects_for_this_hotel%}
+                  <input type="checkbox" name="list_of_selected_aspects[]" value="{{ a.aspect }}"> {{ a.aspect }}<br>
+                  {% endfor %}
+                  <button type="button" class="btn btn-dark "  style="display: block; margin: 5px auto;" onclick="select_all()">Select All</button>
+                  <input type="submit" class="btn btn-dark " style="display: block; margin: 5px auto;" value="Show Summaries for Aspect(s)">
+                  <input type="hidden" name="hotel_id" value="{{selected_hotel.id}}" />
+               </form>
+               <script> function select_all()  {
+                  $('input[type=checkbox]').prop('checked', true);
+                  }
+               </script>
+               {% endif %}
+            </div>
+            <div class="col-sm  form-group">
+               <h3 class="display-5  text-center">Summaries</h3>
+               <div class="scrollable" style="background: transparent;">
+                  <ul>
+                     {% if summaries_selected_hotel %} {% for a in selected_aspects_for_this_hotel %}
+                     <li class="text-info">
+                        Aspect : <b class="text-dark">{{a.aspect}}</b></li>
+                        <ul>
+                           <li class="text-success"> Pros:</li>
+                           <ul>
+                              {% for summary in summaries_selected_hotel|dictsortreversed:'ranking_score'|slice:":" %} {% if a.aspect|stringformat:"s" == summary.aspect|stringformat:"s" and summary.sentiment|stringformat:"s" == 'pos' %}
+                              {% if summary.sentiment_score >= 0.9800 %}
+                              <li class="custom_cards card_g1"  >
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% elif summary.sentiment_score >= 0.9600 and  summary.sentiment_score < 0.9800 %}
+                              <li class="custom_cards card_g2" >
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% elif summary.sentiment_score >= 0.9400 and  summary.sentiment_score < 0.9600 %}
+                              <li class="custom_cards card_g3" >
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% elif summary.sentiment_score >= 0.9000 and  summary.sentiment_score < 0.9400 %}
+                              <li class="custom_cards card_g4" >
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% else %}
+                              <li class="custom_cards card_g5" >
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% endif %}
+                              {% endif %} {% endfor %}
+                           </ul>
+                           <li class="text-danger">Cons:</li>
+                           <ul>
+                              {% for summary in summaries_selected_hotel|dictsortreversed:'ranking_score'|slice:":" %} {% if a.aspect|stringformat:"s" == summary.aspect|stringformat:"s" and summary.sentiment|stringformat:"s" == 'neg' %}
+                              {% if summary.sentiment_score >= 0.0000 and  summary.sentiment_score < 0.0500 %}
+                              <li class="custom_cards card_r1">
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% elif summary.sentiment_score >= 0.0500 and  summary.sentiment_score < 0.1000 %}
+                              <li class="custom_cards card_r2">
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% elif summary.sentiment_score >= 0.1000 and  summary.sentiment_score < 0.2000 %}
+                              <li class="custom_cards card_r3">
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% elif summary.sentiment_score >= 0.2000 and  summary.sentiment_score < 0.3000 %}
+                              <li class="custom_cards card_r4">
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% else %}
+                              <li class="custom_cards card_r5">
+                                 <div class="card-body text-dark">“{{ summary.text }}”-<i>{{ summary.user }}, ({{ summary.ranking_score }}), ({{summary.sentiment_score}})</i></div>
+                              </li>
+                              {% endif %}
+                              {% endif %} {% endfor %}
+                           </ul>
+                           </br>
+                        </ul>
+                        {% endfor %}
+                  </ul>
+                  </ul>
+               </div>
+               {% else %}
+               <h3 class ="text-center">Select a hotel for summaries.</h3>
+               {% endif %}
+            </div>
+         </div>
+      </div>
+      <footer class="site-footer">
+         <div class="container">
+         <div class="row">
+            <div class="ml-auto col-lg-4 col-md-5">
+               <p>*This is a simple tool for demonstrating our result summaries in a more sophisticated way.
+            </div>
+         </div>
+      </footer>
+   </body>
+</html>

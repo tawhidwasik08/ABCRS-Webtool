@@ -1,0 +1,65 @@
+body{
+    background: white url("images/background.jpg");
+    background-repeat: no-repeat;
+    margin-bottom: 0px;
+    margin-top: 100px;
+}
+
+.scrollable {
+    height: 700px; /* or any value */
+    overflow-y: auto;
+}
+
+
+.custom_cards{
+    flex: 1 1 auto;
+    margin: 10px;
+    /*padding: 0px;*/
+    text-align: center;
+    color: white;
+    text-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 0 20px #eee;
+    border-radius: 35px;
+}
+
+.card_g1{
+    background: #00bf53 ;
+}
+
+.card_g2{
+    background: #1ec969 ;
+}
+
+.card_g3{
+    background: #34d17a ;
+}
+
+.card_g4{
+    background: #4bde8d ;
+}
+
+.card_g5{
+    background: #6af7aa ;
+}
+
+
+
+.card_r1{
+    background: #e60b2d ;
+}
+
+.card_r2{
+    background: #e02f4b ;
+}
+
+.card_r3{
+   background: #e0435c ;
+}
+
+.card_r4{
+    background: #eb5e74 ;
+}
+
+.card_r5{
+    background: #ff879a;
+}
